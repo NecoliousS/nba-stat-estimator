@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NBA Stat Estimator - Pro Analytics</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-dark: #0a0e1a;
+            --bg-card: #151b2d;
+            --bg-input: #1e2538;
+            --accent-gold: #f4a732;
+            --accent-gold-hover: #e09520;
+            --text-primary: #ffffff;
+            --text-secondary: #8b92a8;
+            --border-color: #2a3247;
+            --superstar: #ffd700;
+            --star: #c0c0c0;
+            --starter: #4ade80;
+            --role: #fbbf24;
+            --bench: #60a5fa;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .logo-icon {
+            background: var(--accent-gold);
+            color: var(--bg-dark);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-weight: 900;
+            font-size: 0.9rem;
+        }
+
+        .nav {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .nav-btn:hover {
+            color: var(--text-primary);
+            background: var(--bg-input);
+        }
+
+        .nav-btn.active {
+            background: var(--bg-input);
+            color: var(--accent-gold);
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .section-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 2rem;
+        }
+
+        /* Add Player Section */
+        .add-player-layout {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 2rem;
+        }
+
+        .form-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2rem;
+        }
+
+        .form-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-header h2 {
+            font-size: 1.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-header p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .form-row.three-col {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        label span {
+            color: var(--text-secondary);
+            font-weight: 400;
+            font-size: 0.8rem;
+        }
+
+        input {
+            width: 100%;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.875rem 1rem;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+        }
+
+        input::placeholder {
+            color: var(--text-secondary);
+            opacity: 0.5;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .stats-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .btn-primary {
+            width: 100%;
+            background: var(--accent-gold);
+            color: var(--bg-dark);
+            border: none;
+            padding: 1.25rem;
+            font-size: 1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 1.5rem;
+            transition: background 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-gold-hover);
+        }
+
+        /* Roster Sidebar */
+        .roster-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            height: fit-content;
+        }
+
+        .roster-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .roster-count {
+            color: var(--text-secondary);
+        }
+
+        .roster-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .roster-item {
+            background: var(--bg-input);
+            padding: 1rem;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid var(--border-color);
+        }
+
+        .roster-item-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .roster-item-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .roster-item-rank {
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+        }
+
+        .roster-empty {
+            text-align: center;
+            color: var(--text-secondary);
+            padding: 2rem;
+            font-size: 0.9rem;
+        }
+
+        .btn-remove {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+
+        .btn-remove:hover {
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+
+        /* Rankings Section */
+        .rankings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .view-toggle {
+            display: flex;
+            background: var(--bg-card);
+            border-radius: 8px;
+            padding: 0.25rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .view-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            padding: 0.625rem 1.25rem;
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .view-btn.active {
+            background: var(--accent-gold);
+            color: var(--bg-dark);
+        }
+
+        .players-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 1.5rem;
+        }
+
+        /* Player Card - ESPN/NBA 2K Style */
+        .player-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .player-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        .player-header {
+            background: linear-gradient(135deg, var(--bg-input) 0%, var(--bg-card) 100%);
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .player-info h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .player-rank-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .rank-superstar { background: rgba(255, 215, 0, 0.15); color: var(--superstar); border: 1px solid var(--superstar); }
+        .rank-star { background: rgba(192, 192, 192, 0.15); color: var(--star); border: 1px solid var(--star); }
+        .rank-starter { background: rgba(74, 222, 128, 0.15); color: var(--starter); border: 1px solid var(--starter); }
+        .rank-role { background: rgba(251, 191, 36, 0.15); color: var(--role); border: 1px solid var(--role); }
+        .rank-bench { background: rgba(96, 165, 250, 0.15); color: var(--bench); border: 1px solid var(--bench); }
+
+        .player-score {
+            text-align: right;
+        }
+
+        .score-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .score-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 0.25rem;
+        }
+
+        .player-body {
+            padding: 1.5rem;
+        }
+
+        .projected-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .projected-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--accent-gold);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .projection-badge {
+            font-size: 0.7rem;
+            background: var(--bg-input);
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            color: var(--text-secondary);
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-box {
+            text-align: center;
+            padding: 1rem 0.5rem;
+            background: var(--bg-input);
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .player-insights {
+            background: var(--bg-input);
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 3px solid var(--accent-gold);
+        }
+
+        .insights-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .insights-text {
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: var(--text-primary);
+        }
+
+        .season-totals {
+            display: none;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .season-totals.show {
+            display: block;
+        }
+
+        .totals-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+        }
+
+        .total-item {
+            background: var(--bg-dark);
+            padding: 0.75rem;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .total-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+        }
+
+        .total-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        /* Compare Section */
+        .compare-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 3rem;
+            text-align: center;
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .compare-empty {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .compare-grid {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 2rem;
+            width: 100%;
+            align-items: start;
+        }
+
+        .compare-player {
+            background: var(--bg-input);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .compare-vs {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--accent-gold);
+        }
+
+        .compare-stat-row {
+            display: grid;
+            grid-template-columns: 1fr 80px 1fr;
+            gap: 1rem;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .compare-stat-row:last-child {
+            border-bottom: none;
+        }
+
+        .compare-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .compare-value.winner {
+            color: var(--accent-gold);
+        }
+
+        .compare-label {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+
+        .compare-bar {
+            height: 4px;
+            background: var(--border-color);
+            border-radius: 2px;
+            margin-top: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .compare-bar-fill {
+            height: 100%;
+            background: var(--accent-gold);
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        .selector-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .player-selector {
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        select {
+            width: 100%;
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.75rem;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Validation Messages */
+        .validation-msg {
+            color: #ef4444;
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+            display: none;
+        }
+
+        .validation-msg.show {
+            display: block;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .add-player-layout {
+                grid-template-columns: 1fr;
+            }
+            .roster-card {
+                order: -1;
+            }
+            .players-grid {
+                grid-template-columns: 1fr;
+            }
+            .compare-grid {
+                grid-template-columns: 1fr;
+            }
+            .compare-vs {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">
+            <span class="logo-icon">EST</span>
+            <span>NBA STAT ESTIMATOR</span>
+        </div>
+        <nav class="nav">
+            <button class="nav-btn active" onclick="showSection('add')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 5v14M5 12h14"/>
+                </svg>
+                Add Players
+            </button>
+            <button class="nav-btn" onclick="showSection('rankings')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M6 9v10m0-10h12m0 0h1.5a2.5 2.5 0 0 0 0-5H18m0 5v10m-6-5h6"/>
+                </svg>
+                Rankings
+            </button>
+            <button class="nav-btn" onclick="showSection('compare')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 6h18M3 12h18M3 18h18"/>
+                </svg>
+                Compare
+            </button>
+        </nav>
+    </header>
+
+    <main class="container">
+        <!-- Add Players Section -->
+        <section id="add-section" class="section active">
+            <div class="add-player-layout">
+                <div class="form-card">
+                    <div class="form-header">
+                        <h2>Add Player</h2>
+                        <p>Enter current-season stats. Projections scale automatically to a full 82-game season.</p>
+                    </div>
+                    
+                    <form id="player-form">
+                        <div class="form-group">
+                            <label>Player Name</label>
+                            <input type="text" id="player-name" placeholder="e.g. LeBron James" required>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Season Games <span>Total games in season (usually 82)</span></label>
+                                <input type="number" id="season-games" value="82" min="1" max="82" required>
+                                <div class="validation-msg" id="val-season">Must be between 1-82</div>
+                            </div>
+                            <div class="form-group">
+                                <label>Games Played So Far <span>Used to scale stats to full season</span></label>
+                                <input type="number" id="games-played" placeholder="e.g. 41" min="1" required>
+                                <div class="validation-msg" id="val-played">Cannot exceed season games</div>
+                            </div>
+                        </div>
+
+                        <div class="stats-label">Per-Game Stats</div>
+                        
+                        <div class="stats-grid">
+                            <div class="form-group">
+                                <label>MPG <span>max 48</span></label>
+                                <input type="number" id="mpg" step="0.1" max="48" required>
+                                <div class="validation-msg" id="val-mpg">Max 48 minutes</div>
+                            </div>
+                            <div class="form-group">
+                                <label>PPG</label>
+                                <input type="number" id="ppg" step="0.1" required>
+                            </div>
+                            <div class="form-group">
+                                <label>RPG</label>
+                                <input type="number" id="rpg" step="0.1" required>
+                            </div>
+                            <div class="form-group">
+                                <label>APG</label>
+                                <input type="number" id="apg" step="0.1" required>
+                            </div>
+                            <div class="form-group">
+                                <label>SPG</label>
+                                <input type="number" id="spg" step="0.1" required>
+                            </div>
+                            <div class="form-group">
+                                <label>FG% <span>0-100</span></label>
+                                <input type="number" id="fg-pct" step="0.1" min="0" max="100" required>
+                                <div class="validation-msg" id="val-fg">Must be 0-100</div>
+                            </div>
+                            <div class="form-group">
+                                <label>3PM/G</label>
+                                <input type="number" id="tpm" step="0.1" required>
+                            </div>
+                            <div class="form-group">
+                                <label>3PA/G</label>
+                                <input type="number" id="tpa" step="0.1" required>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-primary">Add Player to Roster</button>
+                    </form>
+                </div>
+
+                <div class="roster-card">
+                    <div class="roster-header">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--accent-gold);">
+                            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M6 9v10m0-10h12m0 0h1.5a2.5 2.5 0 0 0 0-5H18m0 5v10m-6-5h6"/>
+                        </svg>
+                        <span>Roster</span>
+                        <span class="roster-count">(<span id="roster-count">0</span>)</span>
+                    </div>
+                    <div class="roster-list" id="roster-list">
+                        <div class="roster-empty">No players added yet.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Rankings Section -->
+        <section id="rankings-section" class="section">
+            <div class="rankings-header">
+                <div>
+                    <h1 class="section-title">Power Rankings</h1>
+                    <p class="section-subtitle"><span id="player-total-count">0</span> Players • Projected to 82-Game Season</p>
+                </div>
+                <div class="view-toggle">
+                    <button class="view-btn active" onclick="toggleView('pergame')">Per Game</button>
+                    <button class="view-btn" onclick="toggleView('season')">Season Totals</button>
+                </div>
+            </div>
+            
+            <div class="players-grid" id="rankings-grid">
+                <!-- Player cards injected here -->
+            </div>
+        </section>
+
+        <!-- Compare Section -->
+        <section id="compare-section" class="section">
+            <h1 class="section-title">Head-to-Head</h1>
+            <p class="section-subtitle">Compare Projected Stats Side by Side</p>
+            
+            <div class="selector-grid" id="compare-selectors">
+                <div class="player-selector">
+                    <label style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem;">Select Player 1</label>
+                    <select id="compare-1" onchange="updateComparison()">
+                        <option value="">Choose a player...</option>
+                    </select>
+                </div>
+                <div class="player-selector">
+                    <label style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem;">Select Player 2</label>
+                    <select id="compare-2" onchange="updateComparison()">
+                        <option value="">Choose a player...</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="compare-container" id="compare-container">
+                <div class="compare-empty">
+                    You need at least 2 players to compare. Add them on the Home page.
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Data Store
+        let players = [];
+        let currentView = 'pergame';
+
+        // Rank System
+        function getRank(score) {
+            if (score >= 90) return { name: "🌟 Superstar", class: "rank-superstar" };
+            if (score >= 75) return { name: "⭐ Star", class: "rank-star" };
+            if (score >= 60) return { name: "🟢 Starter", class: "rank-starter" };
+            if (score >= 45) return { name: "🟡 Role Player", class: "rank-role" };
+            return { name: "🔵 Bench", class: "rank-bench" };
+        }
+
+        // Calculate Insights
+        function getInsight(ppg, apg, rpg, spg, fgPct, threePct) {
+            const notes = [];
+            if (ppg >= 25) notes.push("Elite scorer");
+            else if (ppg >= 18) notes.push("Strong scoring option");
+            
+            if (apg >= 7) notes.push("Elite playmaker");
+            else if (apg >= 4) notes.push("Solid playmaking");
+            
+            if (rpg >= 8) notes.push("Strong rebounder");
+            if (spg >= 1.5) notes.push("Defensive impact player");
+            if (fgPct >= 0.50) notes.push("Elite efficiency shooter");
+            if (threePct >= 0.38) notes.push("Dangerous 3PT shooter");
+            
+            if (notes.length === 0) notes.push("Developing all-around player");
+            return notes.join(" • ");
+        }
+
+        // Calculate Projections
+        function calculateProjections(stats) {
+            const factor = stats.seasonGames / stats.gamesPlayed;
+            
+            return {
+                ppg: stats.ppg * factor,
+                rpg: stats.rpg * factor,
+                apg: stats.apg * factor,
+                spg: stats.spg * factor,
+                mpg: Math.min(stats.mpg * factor, 48),
+                fgPct: stats.fgPct,
+                threePct: stats.threePct,
+                // Season totals
+                totalPoints: Math.round(stats.ppg * stats.seasonGames),
+                totalRebounds: Math.round(stats.rpg * stats.seasonGames),
+                totalAssists: Math.round(stats.apg * stats.seasonGames),
+                totalSteals: Math.round(stats.spg * stats.seasonGames),
+                totalMinutes: Math.round(Math.min(stats.mpg * stats.seasonGames, 48 * stats.seasonGames)),
+                totalThrees: Math.round(stats.tpm * stats.seasonGames)
+            };
+        }
+
+        // Calculate Score
+        function calculateScore(proj, mpg) {
+            return (
+                proj.ppg * 1.1 +
+                proj.rpg * 1.0 +
+                proj.apg * 1.3 +
+                proj.spg * 1.8 +
+                proj.fgPct * 25 +
+                proj.threePct * 15 +
+                Math.min(mpg, 48) * 0.2
+            );
+        }
+
+        // Form Submission
+        document.getElementById('player-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Validation
+            const seasonGames = parseFloat(document.getElementById('season-games').value);
+            const gamesPlayed = parseFloat(document.getElementById('games-played').value);
+            const mpg = parseFloat(document.getElementById('mpg').value);
+            const fgPct = parseFloat(document.getElementById('fg-pct').value);
+            
+            let valid = true;
+            
+            if (gamesPlayed > seasonGames) {
+                document.getElementById('val-played').classList.add('show');
+                valid = false;
+            } else {
+                document.getElementById('val-played').classList.remove('show');
+            }
+            
+            if (mpg > 48) {
+                document.getElementById('val-mpg').classList.add('show');
+                valid = false;
+            } else {
+                document.getElementById('val-mpg').classList.remove('show');
+            }
+            
+            if (fgPct > 100) {
+                document.getElementById('val-fg').classList.add('show');
+                valid = false;
+            } else {
+                document.getElementById('val-fg').classList.remove('show');
+            }
+            
+            if (!valid) return;
+            
+            // Get values
+            const name = document.getElementById('player-name').value;
+            const ppg = parseFloat(document.getElementById('ppg').value);
+            const rpg = parseFloat(document.getElementById('rpg').value);
+            const apg = parseFloat(document.getElementById('apg').value);
+            const spg = parseFloat(document.getElementById('spg').value);
+            const tpm = parseFloat(document.getElementById('tpm').value);
+            const tpa = parseFloat(document.getElementById('tpa').value);
+            
+            const threePct = tpa > 0 ? tpm / tpa : 0;
+            const fgPctDecimal = fgPct / 100;
+            
+            // Calculate projections
+            const rawStats = {
+                seasonGames, gamesPlayed, mpg, ppg, rpg, apg, spg,
+                fgPct: fgPctDecimal, threePct, tpm
+            };
+            
+            const projections = calculateProjections(rawStats);
+            const score = calculateScore(projections, mpg);
+            const rank = getRank(score);
+            const insight = getInsight(ppg, apg, rpg, spg, fgPctDecimal, threePct);
+            
+            const player = {
+                id: Date.now(),
+                name,
+                rawStats,
+                projections,
+                score: Math.round(score * 100) / 100,
+                rank,
+                insight
+            };
+            
+            players.push(player);
+            updateUI();
+            
+            // Reset form
+            document.getElementById('player-form').reset();
+            document.getElementById('season-games').value = 82;
+        });
+
+        function updateUI() {
+            updateRoster();
+            updateRankings();
+            updateCompareSelectors();
+            
+            document.getElementById('roster-count').textContent = players.length;
+            document.getElementById('player-total-count').textContent = players.length;
+        }
+
+        function updateRoster() {
+            const container = document.getElementById('roster-list');
+            
+            if (players.length === 0) {
+                container.innerHTML = '<div class="roster-empty">No players added yet.</div>';
+                return;
+            }
+            
+            container.innerHTML = players.map(p => `
+                <div class="roster-item">
+                    <div class="roster-item-info">
+                        <span class="roster-item-name">${p.name}</span>
+                        <span class="roster-item-rank" style="color: ${getRankColor(p.rank.class)}">${p.rank.name}</span>
+                    </div>
+                    <button class="btn-remove" onclick="removePlayer(${p.id})">Remove</button>
+                </div>
+            `).join('');
+        }
+
+        function getRankColor(rankClass) {
+            const colors = {
+                'rank-superstar': '#ffd700',
+                'rank-star': '#c0c0c0',
+                'rank-starter': '#4ade80',
+                'rank-role': '#fbbf24',
+                'rank-bench': '#60a5fa'
+            };
+            return colors[rankClass] || '#8b92a8';
+        }
+
+        function removePlayer(id) {
+            players = players.filter(p => p.id !== id);
+            updateUI();
+        }
+
+        function updateRankings() {
+            const container = document.getElementById('rankings-grid');
+            
+            if (players.length === 0) {
+                container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 4rem; color: var(--text-secondary);">No players to rank. Add players on the Home page first.</div>';
+                return;
+            }
+            
+            // Sort by score descending
+            const sorted = [...players].sort((a, b) => b.score - a.score);
+            
+            container.innerHTML = sorted.map((p, index) => {
+                const proj = p.projections;
+                const isSeasonView = currentView === 'season';
+                
+                return `
+                <div class="player-card">
+                    <div class="player-header">
+                        <div class="player-info">
+                            <h3>${p.name}</h3>
+                            <span class="player-rank-badge ${p.rank.class}">${p.rank.name}</span>
+                        </div>
+                        <div class="player-score">
+                            <div class="score-value">${p.score}</div>
+                            <div class="score-label">OVR Rating</div>
+                        </div>
+                    </div>
+                    
+                    <div class="player-body">
+                        <div class="projected-header">
+                            <div class="projected-title">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                                </svg>
+                                ${isSeasonView ? 'Season Totals (82 Games)' : 'Projected Per-Game Stats'}
+                            </div>
+                            <span class="projection-badge">82 Game Season</span>
+                        </div>
+                        
+                        <div class="stats-row">
+                            <div class="stat-box">
+                                <div class="stat-value">${isSeasonView ? proj.totalPoints : proj.ppg.toFixed(1)}</div>
+                                <div class="stat-label">${isSeasonView ? 'Total PTS' : 'PPG'}</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value">${isSeasonView ? proj.totalRebounds : proj.rpg.toFixed(1)}</div>
+                                <div class="stat-label">${isSeasonView ? 'Total REB' : 'RPG'}</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value">${isSeasonView ? proj.totalAssists : proj.apg.toFixed(1)}</div>
+                                <div class="stat-label">${isSeasonView ? 'Total AST' : 'APG'}</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value">${isSeasonView ? proj.totalSteals : proj.spg.toFixed(1)}</div>
+                                <div class="stat-label">${isSeasonView ? 'Total STL' : 'SPG'}</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value">${isSeasonView ? proj.totalMinutes : proj.mpg.toFixed(1)}</div>
+                                <div class="stat-label">${isSeasonView ? 'Total MIN' : 'MPG'}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="player-insights">
+                            <div class="insights-title">Player Analysis</div>
+                            <div class="insights-text">${p.insight}</div>
+                        </div>
+                        
+                        <div class="season-totals ${isSeasonView ? 'show' : ''}">
+                            <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 1px;">
+                                Efficiency Stats
+                            </div>
+                            <div class="totals-grid">
+                                <div class="total-item">
+                                    <div class="total-value">${(proj.fgPct * 100).toFixed(1)}%</div>
+                                    <div class="total-label">FG%</div>
+                                </div>
+                                <div class="total-item">
+                                    <div class="total-value">${(proj.threePct * 100).toFixed(1)}%</div>
+                                    <div class="total-label">3P%</div>
+                                </div>
+                                <div class="total-item">
+                                    <div class="total-value">${proj.totalThrees}</div>
+                                    <div class="total-label">Total 3PM</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        function toggleView(view) {
+            currentView = view;
+            document.querySelectorAll('.view-btn').forEach(btn => {
+                btn.classList.toggle('active', 
+                    (view === 'pergame' && btn.textContent === 'Per Game') ||
+                    (view === 'season' && btn.textContent === 'Season Totals')
+                );
+            });
+            updateRankings();
+        }
+
+        function updateCompareSelectors() {
+            const s1 = document.getElementById('compare-1');
+            const s2 = document.getElementById('compare-2');
+            
+            const options = players.map(p => `<option value="${p.id}">${p.name} (${p.score} OVR)</option>`).join('');
+            const defaultOpt = '<option value="">Choose a player...</option>';
+            
+            s1.innerHTML = defaultOpt + options;
+            s2.innerHTML = defaultOpt + options;
+            
+            // Restore selection if still valid
+            if (players.length >= 2) {
+                s1.value = s1.value || players[0].id;
+                s2.value = s2.value || players[1].id;
+                updateComparison();
+            }
+        }
+
+        function updateComparison() {
+            const id1 = document.getElementById('compare-1').value;
+            const id2 = document.getElementById('compare-2').value;
+            const container = document.getElementById('compare-container');
+            
+            if (!id1 || !id2 || players.length < 2) {
+                container.innerHTML = `
+                    <div class="compare-empty">
+                        ${players.length < 2 ? 'You need at least 2 players to compare. Add them on the Home page.' : 'Select two players to compare'}
+                    </div>
+                `;
+                return;
+            }
+            
+            const p1 = players.find(p => p.id == id1);
+            const p2 = players.find(p => p.id == id2);
+            
+            if (!p1 || !p2) return;
+            
+            const stats = [
+                { label: 'Overall Rating', key: 'score', p1: p1.score, p2: p2.score, suffix: '' },
+                { label: 'Projected PPG', key: 'ppg', p1: p1.projections.ppg, p2: p2.projections.ppg, suffix: '' },
+                { label: 'Projected RPG', key: 'rpg', p1: p1.projections.rpg, p2: p2.projections.rpg, suffix: '' },
+                { label: 'Projected APG', key: 'apg', p1: p1.projections.apg, p2: p2.projections.apg, suffix: '' },
+                { label: 'Projected SPG', key: 'spg', p1: p1.projections.spg, p2: p2.projections.spg, suffix: '' },
+                { label: 'Projected MPG', key: 'mpg', p1: p1.projections.mpg, p2: p2.projections.mpg, suffix: '' },
+                { label: 'FG%', key: 'fg', p1: p1.projections.fgPct * 100, p2: p2.projections.fgPct * 100, suffix: '%' },
+                { label: '3P%', key: '3p', p1: p1.projections.threePct * 100, p2: p2.projections.threePct * 100, suffix: '%' }
+            ];
+            
+            const maxScore = Math.max(p1.score, p2.score);
+            
+            container.innerHTML = `
+                <div class="compare-grid">
+                    <div class="compare-player">
+                        <div style="text-align: center; margin-bottom: 1.5rem;">
+                            <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">${p1.name}</h3>
+                            <span class="player-rank-badge ${p1.rank.class}">${p1.rank.name}</span>
+                            <div style="margin-top: 1rem; font-size: 2rem; font-weight: 800; color: var(--accent-gold);">${p1.score}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-secondary);">OVR</div>
+                        </div>
+                        ${stats.map(s => {
+                            const isWin = s.p1 >= s.p2;
+                            const pct = maxScore > 0 ? (s.p1 / Math.max(s.p1, s.p2)) * 100 : 50;
+                            return `
+                            <div class="compare-stat-row">
+                                <div class="compare-value ${isWin ? 'winner' : ''}">${s.p1.toFixed(1)}${s.suffix}</div>
+                                <div class="compare-label">${s.label}</div>
+                                <div></div>
+                            </div>
+                            <div class="compare-bar" style="margin: -0.5rem 0 0.75rem 0;">
+                                <div class="compare-bar-fill" style="width: ${pct}%; opacity: ${isWin ? 1 : 0.3}"></div>
+                            </div>
+                            `;
+                        }).join('')}
+                    </div>
+                    
+                    <div class="compare-vs">VS</div>
+                    
+                    <div class="compare-player">
+                        <div style="text-align: center; margin-bottom: 1.5rem;">
+                            <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">${p2.name}</h3>
+                            <span class="player-rank-badge ${p2.rank.class}">${p2.rank.name}</span>
+                            <div style="margin-top: 1rem; font-size: 2rem; font-weight: 800; color: var(--accent-gold);">${p2.score}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-secondary);">OVR</div>
+                        </div>
+                        ${stats.map(s => {
+                            const isWin = s.p2 >= s.p1;
+                            const pct = (s.p2 / Math.max(s.p1, s.p2)) * 100;
+                            return `
+                            <div class="compare-stat-row">
+                                <div></div>
+                                <div class="compare-label">${s.label}</div>
+                                <div class="compare-value ${isWin ? 'winner' : ''}" style="text-align: right;">${s.p2.toFixed(1)}${s.suffix}</div>
+                            </div>
+                            <div class="compare-bar" style="margin: -0.5rem 0 0.75rem 0; direction: rtl;">
+                                <div class="compare-bar-fill" style="width: ${pct}%; opacity: ${isWin ? 1 : 0.3}; direction: ltr;"></div>
+                            </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function showSection(section) {
+            // Update nav
+            document.querySelectorAll('.nav-btn').forEach((btn, idx) => {
+                btn.classList.toggle('active', 
+                    (section === 'add' && idx === 0) ||
+                    (section === 'rankings' && idx === 1) ||
+                    (section === 'compare' && idx === 2)
+                );
+            });
+            
+            // Update sections
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(`${section}-section`).classList.add('active');
+            
+            if (section === 'compare') {
+                updateComparison();
+            }
+        }
+    </script>
+</body>
+</html>
