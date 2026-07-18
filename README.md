@@ -1,22 +1,3 @@
-# 🏀 NBA Stat Estimator
-
-A Python-based NBA analytics tool that:
-- Projects player stats over a full season
-- Calculates performance ratings
-- Assigns player tiers (Superstar → Bench)
-- Generates scouting-style insights
-- Compares players head-to-head
-
-## Features
-- PPG, RPG, APG, SPG, FG%, 3PT tracking
-- Season projection system
-- Input validation
-- Player comparison tool
-- AI-style player insights
-
-## How to Run
-```bash
-python main.py
 # NBA Stat Estimator
 
 A fantasy basketball tool that takes current-season per-game stats and projects them across a full 82-game season. Includes player ranking, tier system, and head-to-head comparison.
